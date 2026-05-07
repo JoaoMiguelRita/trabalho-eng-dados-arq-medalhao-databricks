@@ -1,0 +1,1 @@
+Neste projeto será desenvolvido uma arquitetura medalhão com apoio do databricks para fins de estudo. Por enquanto, os notebooks seguem o acordo do modelo passado pelo professor, e deve sofrer alteração em breve.
