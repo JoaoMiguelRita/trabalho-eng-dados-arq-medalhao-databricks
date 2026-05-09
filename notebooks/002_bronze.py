@@ -1,3 +1,4 @@
+# Databricks notebook source
 # MAGIC %md
 # MAGIC ## Verificando arquivos na Landing Zone
 
@@ -25,23 +26,22 @@ for arquivo in arquivos_landing:
     # Verifica se é um arquivo JSON
     if arquivo.name.endswith('.json'):
         
-        # Remove a extensão .json para usar como nome da tabela (Ex: "clientes.json" vira "clientes")
+        # Remove a extensão .json para usar como nome da tabela
         nome_tabela = arquivo.name.replace('.json', '')
         caminho_completo = arquivo.path
         
         print(f"🔄 Processando arquivo: {arquivo.name}...")
         
         # 1. LÊ O ARQUIVO JSON
-        # A opção multiLine=True é obrigatória porque o json.dumps do Python gera um array JSON de múltiplas linhas/objetos
         df = spark.read.option("multiline", "true").json(caminho_completo)
         
-        # 2. ADICIONA COLUNAS DE METADADOS (Data Quality/Governança)
+        # 2. ADICIONA COLUNAS DE METADADOS
         df_bronze = df.withColumn("data_hora_bronze", current_timestamp()) \
                       .withColumn("nome_arquivo", lit(arquivo.name))
         
         # 3. GRAVA NA CAMADA BRONZE NO FORMATO DELTA
         tabela_destino = f"workspace.bronze.{nome_tabela}"
-        df_bronze.write.format('delta').mode("overwrite").saveAsTable(tabela_destino)
+        df_bronze.write.format('delta').mode("overwrite").option("mergeSchema", "true").saveAsTable(tabela_destino)
         
         print(f"  ✅ Tabela criada/atualizada: {tabela_destino}")
 
@@ -55,16 +55,5 @@ print("\n🚀 Ingestão na camada Bronze finalizada com sucesso!")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SHOW TABLES IN workspace.bronze;
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## (Exemplo) Visualizando os dados de uma das tabelas criadas
-# MAGIC Altere "nome_da_sua_colecao" para uma das tabelas que apareceram no comando acima.
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC -- Substitua pelo nome de uma coleção real sua, ex: workspace.bronze.clientes
-# MAGIC -- SELECT * FROM workspace.bronze.nome_da_sua_colecao LIMIT 10;
+# MAGIC -- SHOW TABLES IN workspace.bronze;
+# MAGIC  SELECT * FROM workspace.bronze.clientes LIMIT 10;

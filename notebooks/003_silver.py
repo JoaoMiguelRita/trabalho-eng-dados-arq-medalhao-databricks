@@ -7,17 +7,10 @@
 
 # COMMAND ----------
 
-df_apolice   = spark.read.format("delta").table("bronze.apolice")
-df_carro     = spark.read.format("delta").table("bronze.carro")
-df_cliente   = spark.read.format("delta").table("bronze.cliente")
-df_endereco  = spark.read.format("delta").table("bronze.endereco")
-df_estado    = spark.read.format("delta").table("bronze.estado")
-df_marca     = spark.read.format("delta").table("bronze.marca")
-df_modelo    = spark.read.format("delta").table("bronze.modelo")
-df_municipio = spark.read.format("delta").table("bronze.municipio")
-df_regiao    = spark.read.format("delta").table("bronze.regiao")
-df_sinistro  = spark.read.format("delta").table("bronze.sinistro")
-df_telefone  = spark.read.format("delta").table("bronze.telefone")
+df_ar_condicionados   = spark.read.format("delta").table("bronze.ar_condicionados")
+df_clientes          = spark.read.format("delta").table("bronze.clientes")
+df_vendedores        = spark.read.format("delta").table("bronze.vendedores")
+df_vendas            = spark.read.format("delta").table("bronze.vendas")
 
 # COMMAND ----------
 
@@ -30,16 +23,10 @@ df_telefone  = spark.read.format("delta").table("bronze.telefone")
 
 from pyspark.sql.functions import current_timestamp, lit
 
-df_apolice   = df_apolice.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("apolice"))
-df_carro     = df_carro.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("carro"))
-df_cliente   = df_cliente.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("cliente"))
-df_endereco  = df_endereco.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("endereco"))
-df_estado    = df_estado.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("estado"))
-df_marca     = df_marca.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("marca"))
-df_modelo    = df_modelo.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("modelo"))
-df_municipio = df_municipio.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("municipio"))
-df_regiao    = df_regiao.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("regiao"))
-df_sinistro  = df_sinistro.withColumn("data_hora_silver", current_timestamp()).withColumn("nome_tabela", lit("sinistro"))
+df_ar_condicionados   = df_ar_condicionados.withColumn("data_hora_silver", current_timestamp()).withColumn("bronze.ar_condicionados", lit("ar_condicionados"))
+df_clientes     = df_clientes.withColumn("data_hora_silver", current_timestamp()).withColumn("bronze.clientes", lit("clientes"))
+df_vendedores  = df_vendedores.withColumn("data_hora_silver", current_timestamp()).withColumn("bronze.vendedores", lit("vendedores"))
+df_vendas  = df_vendas.withColumn("data_hora_silver", current_timestamp()).withColumn("bronze.vendas", lit("vendas"))
 
 # COMMAND ----------
 
@@ -50,17 +37,10 @@ df_sinistro  = df_sinistro.withColumn("data_hora_silver", current_timestamp()).w
 
 # COMMAND ----------
 
-# df_apolice.write.format('delta').mode("overwrite").saveAsTable("bronze.apolice")
-# df_carro.write.format('delta').mode("overwrite").saveAsTable("bronze.carro")
-# df_cliente.write.format('delta').mode("overwrite").saveAsTable("bronze.cliente")
-# df_endereco.write.format('delta').mode("overwrite").saveAsTable("bronze.endereco")
-# df_estado.write.format('delta').mode("overwrite").saveAsTable("bronze.estado")
-# df_marca.write.format('delta').mode("overwrite").saveAsTable("bronze.marca")
-# df_modelo.write.format('delta').mode("overwrite").saveAsTable("bronze.modelo")
-# df_municipio.write.format('delta').mode("overwrite").saveAsTable("bronze.municipio")
-# df_regiao.write.format('delta').mode("overwrite").saveAsTable("bronze.regiao")
-# df_sinistro.write.format('delta').mode("overwrite").saveAsTable("bronze.sinistro")
-# df_telefone.write.format('delta').mode("overwrite").saveAsTable("bronze.telefone")
+df_ar_condicionados.write.format('delta').mode("overwrite").option("mergeSchema", "true").saveAsTable("silver.ar_condicionados")
+df_clientes.write.format('delta').mode("overwrite").option("mergeSchema", "true").saveAsTable("silver.clientes")
+df_vendedores.write.format('delta').mode("overwrite").option("mergeSchema", "true").saveAsTable("silver.vendedores")
+df_vendas.write.format('delta').mode("overwrite").option("mergeSchema", "true").saveAsTable("silver.vendas")
 
 # COMMAND ----------
 
@@ -122,27 +102,17 @@ def renomear_colunas_managed(src_fqn: str, dest_fqn: str = None):
     (df.write
        .format("delta")
        .mode("overwrite")
+       .option("overwriteSchema", "true")
        .saveAsTable(dest_fqn))
 
     return dest_fqn
 
-
-
 # COMMAND ----------
 
-renomear_colunas_managed("bronze.apolice",   "silver.apolice")
-renomear_colunas_managed("bronze.carro",     "silver.carro")
-renomear_colunas_managed("bronze.cliente",   "silver.cliente")
-renomear_colunas_managed("bronze.endereco",  "silver.endereco")
-renomear_colunas_managed("bronze.estado",    "silver.estado")
-renomear_colunas_managed("bronze.marca",     "silver.marca")
-renomear_colunas_managed("bronze.modelo",    "silver.modelo")
-renomear_colunas_managed("bronze.municipio", "silver.municipio")
-renomear_colunas_managed("bronze.regiao",    "silver.regiao")
-renomear_colunas_managed("bronze.sinistro",  "silver.sinistro")
-renomear_colunas_managed("bronze.telefone",  "silver.telefone")
-
-
+renomear_colunas_managed("bronze.ar_condicionados",   "silver.ar_condicionados")
+renomear_colunas_managed("bronze.clientes",     "silver.clientes")
+renomear_colunas_managed("bronze.vendedores",   "silver.vendedores")
+renomear_colunas_managed("bronze.vendas",  "silver.vendas")
 
 # COMMAND ----------
 
@@ -167,7 +137,7 @@ renomear_colunas_managed("bronze.telefone",  "silver.telefone")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC DESCRIBE DETAIL silver.apolice;
+# MAGIC DESCRIBE DETAIL silver.clientes;
 # MAGIC
 
 # COMMAND ----------
@@ -183,5 +153,5 @@ renomear_colunas_managed("bronze.telefone",  "silver.telefone")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC DESCRIBE EXTENDED silver.apolice;
-# MAGIC --DESCRIBE TABLE EXTENDED apolice_bronze;
+# MAGIC DESCRIBE EXTENDED silver.clientes;
+# MAGIC --DESCRIBE TABLE EXTENDED clientes;
