@@ -1,126 +1,70 @@
-# Databricks notebook source
 # MAGIC %md
-# MAGIC ## display(dbutils.fs.ls('caminho')
-# MAGIC
-# MAGIC
-# MAGIC Mostra todos os arquivos que estão dentro do Volume chamado "dados" que foi criado dentro do catálogo workspace, schema/database default.
+# MAGIC ## Verificando arquivos na Landing Zone
 
 # COMMAND ----------
 
-display(dbutils.fs.ls('/'))
-
-# COMMAND ----------
-
-display(dbutils.fs.ls('/Volumes/workspace/landing/dados/'))
+caminho_landing = '/Volumes/workspace/landing/dados/'
+display(dbutils.fs.ls(caminho_landing))
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## df = spark.read.option("infeschema", "true").option("header", "true").csv("path + filename")
-# MAGIC
-# MAGIC Gera um dataframe para cada arquivo que está no Volume "dados".
-# MAGIC
-
-# COMMAND ----------
-
-caminho_landing = '/Volumes/workspace/landing/dados'
-
-df_apolice   = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/apolice.csv")
-df_carro     = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/carro.csv")
-df_cliente   = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/cliente.csv")
-df_endereco  = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/endereco.csv")
-df_estado    = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/estado.csv")
-df_marca     = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/marca.csv")
-df_modelo    = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/modelo.csv")
-df_municipio = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/municipio.csv")
-df_regiao    = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/regiao.csv")
-df_sinistro  = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/sinistro.csv")
-df_telefone  = spark.read.option("infeschema", "true").option("header", "true").csv(f"{caminho_landing}/telefone.csv")
-
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## df = df_apolice.withColumn("nome_coluna", "valor")
-# MAGIC
-# MAGIC Adiciona uma nova coluna (metadado) de data e hora de processamento e nome do arquivo de origem.
+# MAGIC ## Lendo JSONs, adicionando Metadados e gravando na Bronze (Delta)
+# MAGIC Este script é dinâmico. Ele lê qualquer arquivo JSON na landing zone e cria a tabela correspondente na camada Bronze.
 
 # COMMAND ----------
 
 from pyspark.sql.functions import current_timestamp, lit
 
-df_apolice   = df_apolice.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("apolice.csv"))
-df_carro     = df_carro.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("carro.csv"))
-df_cliente   = df_cliente.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("cliente.csv"))
-df_endereco  = df_endereco.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("endereco.csv"))
-df_estado    = df_estado.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("estado.csv"))
-df_marca     = df_marca.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("marca.csv"))
-df_modelo    = df_modelo.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("modelo.csv"))
-df_municipio = df_municipio.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("municipio.csv"))
-df_regiao    = df_regiao.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("regiao.csv"))
-df_sinistro  = df_sinistro.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("sinistro.csv"))
-df_telefone  = df_telefone.withColumn("data_hora_bronze", current_timestamp()).withColumn("nome_arquivo", lit("telefone.csv"))
+# Lista todos os arquivos dentro do volume da Landing
+arquivos_landing = dbutils.fs.ls(caminho_landing)
 
+print("Iniciando o processamento para a camada Bronze...\n")
 
-# COMMAND ----------
+for arquivo in arquivos_landing:
+    # Verifica se é um arquivo JSON
+    if arquivo.name.endswith('.json'):
+        
+        # Remove a extensão .json para usar como nome da tabela (Ex: "clientes.json" vira "clientes")
+        nome_tabela = arquivo.name.replace('.json', '')
+        caminho_completo = arquivo.path
+        
+        print(f"🔄 Processando arquivo: {arquivo.name}...")
+        
+        # 1. LÊ O ARQUIVO JSON
+        # A opção multiLine=True é obrigatória porque o json.dumps do Python gera um array JSON de múltiplas linhas/objetos
+        df = spark.read.option("multiline", "true").json(caminho_completo)
+        
+        # 2. ADICIONA COLUNAS DE METADADOS (Data Quality/Governança)
+        df_bronze = df.withColumn("data_hora_bronze", current_timestamp()) \
+                      .withColumn("nome_arquivo", lit(arquivo.name))
+        
+        # 3. GRAVA NA CAMADA BRONZE NO FORMATO DELTA
+        tabela_destino = f"workspace.bronze.{nome_tabela}"
+        df_bronze.write.format('delta').mode("overwrite").saveAsTable(tabela_destino)
+        
+        print(f"  ✅ Tabela criada/atualizada: {tabela_destino}")
 
-# MAGIC %md
-# MAGIC ## df_apolice.write.format('delta').saveAsTable("nome_tabela")
-# MAGIC
-# MAGIC Salva os dataframes em arquivos delta lake (formato de arquivo) no schema/database "bronze". As tabelas geradas são do tipo MANAGED (gerenciadas).
-
-# COMMAND ----------
-
-df_apolice.write.format('delta').mode("overwrite").saveAsTable("bronze.apolice")
-df_carro.write.format('delta').mode("overwrite").saveAsTable("bronze.carro")
-df_cliente.write.format('delta').mode("overwrite").saveAsTable("bronze.cliente")
-df_endereco.write.format('delta').mode("overwrite").saveAsTable("bronze.endereco")
-df_estado.write.format('delta').mode("overwrite").saveAsTable("bronze.estado")
-df_marca.write.format('delta').mode("overwrite").saveAsTable("bronze.marca")
-df_modelo.write.format('delta').mode("overwrite").saveAsTable("bronze.modelo")
-df_municipio.write.format('delta').mode("overwrite").saveAsTable("bronze.municipio")
-df_regiao.write.format('delta').mode("overwrite").saveAsTable("bronze.regiao")
-df_sinistro.write.format('delta').mode("overwrite").saveAsTable("bronze.sinistro")
-df_telefone.write.format('delta').mode("overwrite").saveAsTable("bronze.telefone")
+print("\n🚀 Ingestão na camada Bronze finalizada com sucesso!")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## (SQL) SHOW TABLES IN bronze
-# MAGIC
-# MAGIC Verifica os dados gravados no formato delta lake tipo MANAGED na camada bronze.
+# MAGIC ## (SQL) Conferindo as tabelas criadas na camada Bronze
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SHOW TABLES IN bronze
+# MAGIC SHOW TABLES IN workspace.bronze;
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## (SQL) DESCRIBE DETAIL nome_tabela;
-# MAGIC
-# MAGIC
-# MAGIC Vendo os detalhes de um tabela delta lake.
+# MAGIC ## (Exemplo) Visualizando os dados de uma das tabelas criadas
+# MAGIC Altere "nome_da_sua_colecao" para uma das tabelas que apareceram no comando acima.
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC DESCRIBE DETAIL bronze.apolice;
-# MAGIC
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## (SQL) DESCRIBE EXTENDED nome_tabela;
-# MAGIC ou 
-# MAGIC ##(SQL) DESCRIBE TABLE EXTENDED nome_tabela;
-# MAGIC
-# MAGIC Mostra se a tabela é MANAGED Ou EXTERNAL.
-# MAGIC
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC DESCRIBE EXTENDED bronze.apolice;
-# MAGIC --DESCRIBE TABLE EXTENDED apolice_bronze;
+# MAGIC -- Substitua pelo nome de uma coleção real sua, ex: workspace.bronze.clientes
+# MAGIC -- SELECT * FROM workspace.bronze.nome_da_sua_colecao LIMIT 10;
