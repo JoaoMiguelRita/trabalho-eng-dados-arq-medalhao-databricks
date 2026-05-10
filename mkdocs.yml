@@ -1,0 +1,48 @@
+site_name: "Trabalho Engenharia de Dados - Arquitetura Medalhão"
+site_description: "Documentação do projeto de pipeline de dados Databricks e arquitetura Medalhão."
+site_author: "Gustavo de Freitas Cardoso"
+site_url: "https://GustavodeFreitasCardoso.github.io/trabalho-eng-dados-arq-medalhao-databricks"
+
+# Configuração do Tema (Material)
+theme:
+  name: material
+  language: pt  # Traduz botões de busca, tags, etc.
+  palette:
+    # Modo Claro
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Mudar para modo escuro
+    # Modo Escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Mudar para modo claro
+  features:
+    - navigation.tabs          # Menu horizontal no topo
+    - navigation.sections      # Agrupamento lateral
+    - code.copy                # Botão de copiar código
+
+# Extensões para Markdown (melhora visualização de códigos, tabelas e equações)
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - tables
+
+# Estrutura de Navegação (Podes expandir criando mais ficheiros .md na pasta docs)
+nav:
+  - Início: index.md
+# - Bronze: bronze.md      # Exemplo se quiseres separar por camadas depois
+# - Silver: silver.md
+# - Gold: gold.md
