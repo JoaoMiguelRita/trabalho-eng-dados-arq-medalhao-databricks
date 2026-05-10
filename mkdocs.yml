@@ -1,48 +1,70 @@
-site_name: "Trabalho Engenharia de Dados - Arquitetura Medalhão"
-site_description: "Documentação do projeto de pipeline de dados Databricks e arquitetura Medalhão."
-site_author: "Gustavo de Freitas Cardoso"
-site_url: "https://GustavodeFreitasCardoso.github.io/trabalho-eng-dados-arq-medalhao-databricks"
+site_name: Pipeline de Dados - Arquitetura Medalhão
+site_description: Projeto de Engenharia de Dados utilizando MongoDB Atlas, Databricks e Delta Lake
+site_author: Gustavo Cardoso & João Miguel Rita
+repo_url: https://github.com/GustavodeFreitasCardoso/trabalho-eng-dados-arq-medalhao-databricks
+repo_name: trabalho-eng-dados-arq-medalhao-databricks
 
-# Configuração do Tema (Material)
 theme:
   name: material
-  language: pt  # Traduz botões de busca, tags, etc.
-  palette:
-    # Modo Claro
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Mudar para modo escuro
-    # Modo Escuro
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Mudar para modo claro
-  features:
-    - navigation.tabs          # Menu horizontal no topo
-    - navigation.sections      # Agrupamento lateral
-    - code.copy                # Botão de copiar código
+  language: pt-BR
 
-# Extensões para Markdown (melhora visualização de códigos, tabelas e equações)
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Alternar para modo claro
+
+    - scheme: default
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Alternar para modo escuro
+
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.tabs.link
+    - toc.integrate
+
+  icon:
+    repo: fontawesome/brands/github
+
 markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
   - pymdownx.highlight:
       anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
-  - tables
+  - pymdownx.tabbed:
+      alternate_style: true
 
-# Estrutura de Navegação (Podes expandir criando mais ficheiros .md na pasta docs)
+plugins:
+  - search
+
 nav:
   - Início: index.md
-# - Bronze: bronze.md      # Exemplo se quiseres separar por camadas depois
+# - Bronze: bronze.md
 # - Silver: silver.md
 # - Gold: gold.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/GustavodeFreitasCardoso
+
+copyright: >
+  Copyright &copy; 2026 Gustavo Cardoso & João Miguel Rita
