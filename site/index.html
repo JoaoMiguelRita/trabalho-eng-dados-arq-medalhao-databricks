@@ -1,0 +1,1223 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Projeto de Engenharia de Dados utilizando MongoDB Atlas, Databricks e Delta Lake">
+      
+      
+        <meta name="author" content="Gustavo Cardoso & João Miguel Rita">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Pipeline de Dados - Arquitetura Medalhão</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipeline-de-dados-com-arquitetura-medalhao" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="." title="Pipeline de Dados - Arquitetura Medalhão" class="md-header__button md-logo" aria-label="Pipeline de Dados - Arquitetura Medalhão" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pipeline de Dados - Arquitetura Medalhão
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Início
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Alternar para modo claro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Alternar para modo claro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Alternar para modo escuro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Alternar para modo escuro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GustavodeFreitasCardoso/trabalho-eng-dados-arq-medalhao-databricks" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trabalho-eng-dados-arq-medalhao-databricks
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Início
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Pipeline de Dados - Arquitetura Medalhão" class="md-nav__button md-logo" aria-label="Pipeline de Dados - Arquitetura Medalhão" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Pipeline de Dados - Arquitetura Medalhão
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GustavodeFreitasCardoso/trabalho-eng-dados-arq-medalhao-databricks" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trabalho-eng-dados-arq-medalhao-databricks
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-o-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📖 Sobre o Projeto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-medalhao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Arquitetura Medalhão
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fluxo-do-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Fluxo do Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tecnologias-utilizadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ Tecnologias Utilizadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estrutura-do-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📂 Estrutura do Projeto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsabilidade-dos-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📘 Responsabilidade dos Notebooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execucao-do-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Execução do Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Execução do Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-clonar-o-repositorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1️⃣ Clonar o Repositório
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configuracao-segura-de-credenciais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2️⃣ Configuração Segura de Credenciais
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ordem-de-execucao-da-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3️⃣ Ordem de Execução da Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conceitos-demonstrados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Conceitos Demonstrados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-alcancados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Resultados Alcançados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-passos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔮 Próximos Passos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limpeza-do-ambiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧹 Limpeza do Ambiente
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        👨‍💻 Autores
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#objetivo-academico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📌 Objetivo Acadêmico
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p><img alt="Spark" src="https://img.shields.io/badge/Apache%20Spark-3.5.3-orange" />
+<img alt="Delta Lake" src="https://img.shields.io/badge/Delta%20Lake-3.2.0-blue" />
+<img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Latest-green" />
+<img alt="Databricks" src="https://img.shields.io/badge/Databricks-Lakehouse-red" />
+<img alt="PySpark" src="https://img.shields.io/badge/PySpark-ETL-yellow" /></p>
+<h1 id="pipeline-de-dados-com-arquitetura-medalhao">Pipeline de Dados com Arquitetura Medalhão<a class="headerlink" href="#pipeline-de-dados-com-arquitetura-medalhao" title="Permanent link">&para;</a></h1>
+<h2 id="sobre-o-projeto">📖 Sobre o Projeto<a class="headerlink" href="#sobre-o-projeto" title="Permanent link">&para;</a></h2>
+<p>Este projeto implementa um pipeline de dados ponta a ponta utilizando a <strong>Arquitetura Medalhão (Medallion Architecture)</strong> no ecossistema Lakehouse da Databricks.</p>
+<p>O sistema realiza a ingestão de dados provenientes do <strong>MongoDB Atlas</strong>, processando-os através das camadas <strong>Landing</strong>, <strong>Bronze</strong>, <strong>Silver</strong> e <strong>Gold</strong>, aplicando conceitos modernos de Engenharia de Dados como:</p>
+<ul>
+<li>Processamento distribuído com Apache Spark</li>
+<li>Armazenamento transacional com Delta Lake</li>
+<li>Modelagem dimensional</li>
+<li>Governança e versionamento de dados</li>
+<li>Orquestração automatizada com Databricks Workflows</li>
+</ul>
+<p>O domínio de negócio utilizado para simulação foi o de <strong>Vendas de Ar-Condicionado</strong>, representando um cenário realista de processamento analítico em ambientes Lakehouse.</p>
+<hr />
+<div class="admonition info">
+<p class="admonition-title">Objetivo do Projeto</p>
+<p>Desenvolver uma pipeline moderna de Engenharia de Dados utilizando Databricks e Delta Lake, aplicando conceitos de ingestão, transformação, governança e modelagem analítica em múltiplas camadas.</p>
+</div>
+<hr />
+<h2 id="arquitetura-medalhao">🏗️ Arquitetura Medalhão<a class="headerlink" href="#arquitetura-medalhao" title="Permanent link">&para;</a></h2>
+<p>A Arquitetura Medalhão organiza os dados em diferentes níveis de refinamento, garantindo maior qualidade, governança e desempenho analítico.</p>
+<ul>
+<li>Governança</li>
+<li>Qualidade</li>
+<li>Escalabilidade</li>
+<li>Performance analítica</li>
+</ul>
+<hr />
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>📥 LANDING ZONE</strong></p>
+<hr />
+<p>Camada de ingestão contendo os dados originais extraídos do MongoDB.</p>
+<p><strong>Responsabilidades</strong></p>
+<ul>
+<li>Extração MongoDB Atlas</li>
+<li>Armazenamento bruto</li>
+<li>Arquivos JSON</li>
+<li>Dados sem transformação</li>
+</ul>
+</li>
+<li>
+<p><strong>🥉 BRONZE LAYER</strong></p>
+<hr />
+<p>Conversão dos dados brutos para estruturas Delta Lake.</p>
+<p><strong>Responsabilidades</strong></p>
+<ul>
+<li>Conversão JSON → Delta</li>
+<li>Estruturação inicial</li>
+<li>Persistência transacional</li>
+<li>Controle de schema</li>
+</ul>
+</li>
+<li>
+<p><strong>🥈 SILVER LAYER</strong></p>
+<hr />
+<p>Camada responsável pelo tratamento e padronização dos dados.</p>
+<p><strong>Responsabilidades</strong></p>
+<ul>
+<li>Limpeza de dados</li>
+<li>Padronização</li>
+<li>Enriquecimento</li>
+<li>Regras de qualidade</li>
+</ul>
+</li>
+<li>
+<p><strong>🏆 GOLD LAYER</strong></p>
+<hr />
+<p>Camada analítica preparada para consumo por ferramentas de BI e dashboards.</p>
+<p><strong>Responsabilidades</strong></p>
+<ul>
+<li>Modelagem dimensional</li>
+<li>Tabelas fato e dimensão</li>
+<li>Analytics e KPIs</li>
+<li>Consumo para BI</li>
+</ul>
+</li>
+</ul>
+</div>
+<hr />
+<h2 id="fluxo-do-pipeline">🔄 Fluxo do Pipeline<a class="headerlink" href="#fluxo-do-pipeline" title="Permanent link">&para;</a></h2>
+<p>O pipeline segue múltiplas etapas para garantir integridade, rastreabilidade e governança dos dados ao longo de toda a arquitetura Medalhão.</p>
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>Camada / Destino</th>
+<th>Objetivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>MongoDB Atlas</strong></td>
+<td>Base NoSQL contendo as coleções de vendas utilizadas como origem dos dados</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>Landing Zone</strong></td>
+<td>Extração e persistência dos dados brutos em formato JSON</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Bronze Layer</strong></td>
+<td>Conversão dos arquivos JSON em tabelas Delta Lake</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><strong>Silver Layer</strong></td>
+<td>Limpeza, padronização, tratamento e enriquecimento dos dados</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td><strong>Gold Layer</strong></td>
+<td>Modelagem dimensional preparada para BI e Analytics</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tecnologias-utilizadas">⚙️ Tecnologias Utilizadas<a class="headerlink" href="#tecnologias-utilizadas" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tecnologia</th>
+<th>Descrição</th>
+<th>Utilização no Projeto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MongoDB Atlas</strong></td>
+<td>Banco de dados NoSQL</td>
+<td>Fonte principal de dados da pipeline</td>
+</tr>
+<tr>
+<td><strong>Databricks</strong></td>
+<td>Plataforma Lakehouse</td>
+<td>Processamento e gerenciamento do ambiente analítico</td>
+</tr>
+<tr>
+<td><strong>Apache Spark (PySpark &amp; SQL)</strong></td>
+<td>Engine de processamento distribuído</td>
+<td>Transformações, ingestão e processamento ETL</td>
+</tr>
+<tr>
+<td><strong>Delta Lake</strong></td>
+<td>Armazenamento transacional ACID</td>
+<td>Persistência confiável, versionamento e Time Travel</td>
+</tr>
+<tr>
+<td><strong>Databricks Workflows</strong></td>
+<td>Orquestração de pipelines</td>
+<td>Automação e execução sequencial dos notebooks</td>
+</tr>
+<tr>
+<td><strong>Python</strong></td>
+<td>Linguagem de programação</td>
+<td>Desenvolvimento dos scripts ETL</td>
+</tr>
+<tr>
+<td><strong>JSON</strong></td>
+<td>Formato de persistência</td>
+<td>Armazenamento dos dados brutos na Landing Zone</td>
+</tr>
+</tbody>
+</table>
+<h2 id="estrutura-do-projeto">📂 Estrutura do Projeto<a class="headerlink" href="#estrutura-do-projeto" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>notebook/</strong></p>
+<hr />
+<p>Contém todos os notebooks responsáveis pela execução da pipeline de dados.</p>
+<table>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Função</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>001_setup_landing.ipynb</code></td>
+<td>Criação dos schemas e ingestão inicial</td>
+</tr>
+<tr>
+<td><code>002_bronze.ipynb</code></td>
+<td>Conversão JSON → Delta Lake</td>
+</tr>
+<tr>
+<td><code>003_silver.ipynb</code></td>
+<td>Limpeza e padronização</td>
+</tr>
+<tr>
+<td><code>004_gold.ipynb</code></td>
+<td>Modelagem dimensional</td>
+</tr>
+<tr>
+<td><code>005_destroy.ipynb</code></td>
+<td>Reset completo do ambiente</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>docs/</strong></p>
+<hr />
+<p>Pasta responsável pela documentação do projeto utilizando MkDocs.</p>
+<table>
+<thead>
+<tr>
+<th>Arquivo</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.md</code></td>
+<td>Página principal da documentação</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>mkdocs.yml</strong></p>
+<hr />
+<p>Arquivo de configuração do MkDocs responsável por:</p>
+<ul>
+<li>Tema</li>
+<li>Navegação</li>
+<li>Plugins</li>
+<li>Extensões Markdown</li>
+</ul>
+</li>
+<li>
+<p><strong>README.md</strong></p>
+<hr />
+<p>Documentação resumida do projeto exibida diretamente no GitHub.</p>
+</li>
+</ul>
+</div>
+<h2 id="responsabilidade-dos-notebooks">📘 Responsabilidade dos Notebooks<a class="headerlink" href="#responsabilidade-dos-notebooks" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Camada</th>
+<th>Responsabilidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>001_setup_landing</code></td>
+<td><strong>Landing</strong></td>
+<td>Criação dos schemas, configuração inicial e ingestão dos dados do MongoDB Atlas</td>
+</tr>
+<tr>
+<td><code>002_bronze</code></td>
+<td><strong>Bronze</strong></td>
+<td>Conversão dinâmica dos arquivos JSON para tabelas Delta Lake</td>
+</tr>
+<tr>
+<td><code>003_silver</code></td>
+<td><strong>Silver</strong></td>
+<td>Limpeza, padronização, tratamento e aplicação de regras de qualidade</td>
+</tr>
+<tr>
+<td><code>004_gold</code></td>
+<td><strong>Gold</strong></td>
+<td>Construção da modelagem dimensional com tabelas Fato e Dimensão</td>
+</tr>
+<tr>
+<td><code>005_destroy</code></td>
+<td><strong>Administração</strong></td>
+<td>Remoção completa dos schemas, volumes e tabelas do ambiente</td>
+</tr>
+</tbody>
+</table>
+<h2 id="execucao-do-pipeline">🚀 Execução do Pipeline<a class="headerlink" href="#execucao-do-pipeline" title="Permanent link">&para;</a></h2>
+<h3 id="1-clonar-o-repositorio">1️⃣ Clonar o Repositório<a class="headerlink" href="#1-clonar-o-repositorio" title="Permanent link">&para;</a></h3>
+<p>Clone o projeto diretamente do GitHub para o ambiente Databricks ou máquina local.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/GustavodeFreitasCardoso/trabalho-eng-dados-arq-medalhao-databricks.git
+</code></pre></div>
+<hr />
+<h3 id="2-configuracao-segura-de-credenciais">2️⃣ Configuração Segura de Credenciais<a class="headerlink" href="#2-configuracao-segura-de-credenciais" title="Permanent link">&para;</a></h3>
+<p>Para manter segurança e boas práticas, utilize o sistema de <strong>Databricks Secrets</strong> para armazenar as credenciais do MongoDB Atlas.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>databricks<span class="w"> </span>secrets<span class="w"> </span>create-scope<span class="w"> </span>mongo_auth
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>databricks<span class="w"> </span>secrets<span class="w"> </span>put-secret<span class="w"> </span>mongo_auth<span class="w"> </span>mongo_senha
+</code></pre></div>
+<p>Além disso, configure as seguintes variáveis de ambiente no cluster:</p>
+<table>
+<thead>
+<tr>
+<th>Variável</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DB_USER</code></td>
+<td>Usuário do MongoDB Atlas</td>
+</tr>
+<tr>
+<td><code>DB_HOST</code></td>
+<td>Endpoint de conexão do cluster MongoDB</td>
+</tr>
+<tr>
+<td><code>DB_NAME</code></td>
+<td>Nome do banco de dados utilizado</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-ordem-de-execucao-da-pipeline">3️⃣ Ordem de Execução da Pipeline<a class="headerlink" href="#3-ordem-de-execucao-da-pipeline" title="Permanent link">&para;</a></h3>
+<p>A execução dos notebooks deve respeitar a dependência entre as camadas da arquitetura Medalhão.</p>
+<table>
+<thead>
+<tr>
+<th>Ordem</th>
+<th>Notebook</th>
+<th>Objetivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><code>001_setup_landing</code></td>
+<td>Extração inicial e persistência dos dados brutos</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><code>002_bronze</code></td>
+<td>Conversão dos arquivos JSON para Delta Lake</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><code>003_silver</code></td>
+<td>Limpeza, tratamento e Data Quality</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><code>004_gold</code></td>
+<td>Construção da camada analítica dimensional</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Recomendação</p>
+<p>Utilize o <strong>Databricks Workflows</strong> para automatizar a execução sequencial da pipeline.</p>
+</div>
+<h2 id="conceitos-demonstrados">📊 Conceitos Demonstrados<a class="headerlink" href="#conceitos-demonstrados" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Arquitetura Medalhão</strong></p>
+<hr />
+<p>Separação das responsabilidades entre as camadas:</p>
+<ul>
+<li>Landing</li>
+<li>Bronze</li>
+<li>Silver</li>
+<li>Gold</li>
+</ul>
+<p>Garantindo organização, governança e escalabilidade da pipeline.</p>
+</li>
+<li>
+<p><strong>Governança de Dados</strong></p>
+<hr />
+<p>Utilização do <strong>Delta Lake</strong> para garantir:</p>
+<ul>
+<li>Consistência</li>
+<li>Rastreabilidade</li>
+<li>Controle transacional</li>
+<li>Integridade dos dados</li>
+</ul>
+</li>
+<li>
+<p><strong>Modelagem Dimensional</strong></p>
+<hr />
+<p>Construção de tabelas:</p>
+<ul>
+<li>Fato</li>
+<li>Dimensão</li>
+</ul>
+<p>Estruturadas para consumo analítico e ferramentas de BI.</p>
+</li>
+<li>
+<p><strong>Processamento Distribuído</strong></p>
+<hr />
+<p>Transformações executadas utilizando:</p>
+<ul>
+<li>Apache Spark</li>
+<li>PySpark</li>
+<li>Spark SQL</li>
+</ul>
+<p>Permitindo processamento escalável de grandes volumes de dados.</p>
+</li>
+<li>
+<p><strong>Versionamento e ACID</strong></p>
+<hr />
+<p>Operações transacionais utilizando Delta Lake com suporte a:</p>
+<ul>
+<li>ACID Transactions</li>
+<li>Histórico de alterações</li>
+<li>Time Travel</li>
+<li>Auditoria de dados</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="resultados-alcancados">✅ Resultados Alcançados<a class="headerlink" href="#resultados-alcancados" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Pipeline Operacional</strong></p>
+<hr />
+<p>Execução completa da pipeline ponta a ponta com sucesso, garantindo integração entre todas as camadas da arquitetura.</p>
+</li>
+<li>
+<p><strong>Ingestão Automatizada</strong></p>
+<hr />
+<p>Integração funcional entre <strong>MongoDB Atlas</strong> e <strong>Databricks</strong>, realizando ingestão automatizada dos dados.</p>
+</li>
+<li>
+<p><strong>Persistência com Delta Lake</strong></p>
+<hr />
+<p>Armazenamento transacional implementado utilizando Delta Lake com suporte a versionamento e confiabilidade.</p>
+</li>
+<li>
+<p><strong>Arquitetura Medalhão</strong></p>
+<hr />
+<p>Separação dos dados em múltiplas camadas:</p>
+<ul>
+<li>Landing</li>
+<li>Bronze</li>
+<li>Silver</li>
+<li>Gold</li>
+</ul>
+</li>
+<li>
+<p><strong>Modelagem Analítica</strong></p>
+<hr />
+<p>Construção de estruturas analíticas voltadas para consultas, dashboards e métricas de negócio.</p>
+</li>
+<li>
+<p><strong>Preparado para BI</strong></p>
+<hr />
+<p>Ambiente estruturado para integração futura com ferramentas de Business Intelligence e Analytics.</p>
+</li>
+</ul>
+</div>
+<div class="admonition success">
+<p class="admonition-title">Resultado Final</p>
+<p>O projeto demonstra uma arquitetura moderna de Engenharia de Dados utilizando conceitos de Lakehouse, governança e processamento distribuído.</p>
+</div>
+<h2 id="proximos-passos">🔮 Próximos Passos<a class="headerlink" href="#proximos-passos" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Data Quality Avançado</strong></p>
+<hr />
+<p>Implementar regras mais robustas de validação e qualidade dos dados, garantindo maior confiabilidade nas camadas analíticas.</p>
+</li>
+<li>
+<p><strong>Monitoramento da Pipeline</strong></p>
+<hr />
+<p>Adicionar mecanismos de observabilidade para acompanhar:</p>
+<ul>
+<li>Execuções</li>
+<li>Logs</li>
+<li>Falhas</li>
+<li>Performance do pipeline</li>
+</ul>
+</li>
+<li>
+<p>: <strong>Dashboards Analíticos</strong></p>
+<hr />
+<p>Desenvolver dashboards e visualizações utilizando ferramentas de BI para exploração dos dados processados.</p>
+</li>
+<li>
+<p><strong>Integração com Apache Airflow</strong></p>
+<hr />
+<p>Automatizar e orquestrar os processos ETL utilizando workflows agendados e monitorados.</p>
+</li>
+<li>
+<p><strong>Arquitetura Streaming</strong></p>
+<hr />
+<p>Evoluir a solução para processamento em tempo real utilizando pipelines orientadas a eventos e streaming de dados.</p>
+</li>
+</ul>
+</div>
+<h2 id="limpeza-do-ambiente">🧹 Limpeza do Ambiente<a class="headerlink" href="#limpeza-do-ambiente" title="Permanent link">&para;</a></h2>
+<p>O notebook :material-delete-forever: <code>005_destroy.ipynb</code> foi criado para facilitar o reset completo do ambiente da pipeline.</p>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Schemas</strong></p>
+<hr />
+<p>Remove todos os schemas criados durante a execução da arquitetura Medalhão.</p>
+</li>
+<li>
+<p><strong>Volumes</strong></p>
+<hr />
+<p>Exclui os volumes utilizados para armazenamento dos dados nas camadas da pipeline.</p>
+</li>
+<li>
+<p><strong>Tabelas Delta</strong></p>
+<hr />
+<p>Remove completamente as tabelas Delta criadas durante o processamento.</p>
+</li>
+<li>
+<p><strong>Estruturas Temporárias</strong></p>
+<hr />
+<p>Limpa recursos auxiliares e estruturas temporárias utilizadas nos notebooks.</p>
+</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Atenção</p>
+<p>Este processo realiza exclusão permanente dos dados e estruturas do ambiente.<br />
+Utilize o notebook apenas quando for necessário reinicializar completamente o projeto.</p>
+</div>
+<h2 id="autores">👨‍💻 Autores<a class="headerlink" href="#autores" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Gustavo de Freitas Cardoso</strong></p>
+<hr />
+<p><strong>Curso:</strong> Engenharia de Software — SATC  </p>
+<p><a href="https://github.com/GustavodeFreitasCardoso">GitHub</a></p>
+</li>
+<li>
+<p><strong>João Miguel Rita</strong></p>
+<hr />
+<p><strong>Curso:</strong> Engenharia de Software — SATC  </p>
+<p><a href="https://github.com/JoaoMiguelRita">GitHub</a></p>
+</li>
+</ul>
+</div>
+<h2 id="objetivo-academico">📌 Objetivo Acadêmico<a class="headerlink" href="#objetivo-academico" title="Permanent link">&para;</a></h2>
+<p>Este projeto foi desenvolvido com finalidade acadêmica visando aplicar conceitos modernos de Engenharia de Dados em ambientes Lakehouse.</p>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Engenharia de Dados</strong></p>
+<p>Desenvolvimento de pipelines modernas para ingestão, transformação e governança de dados.</p>
+</li>
+<li>
+<p>: <strong>Arquitetura Lakehouse</strong></p>
+<p>Aplicação do modelo Lakehouse utilizando múltiplas camadas de processamento e armazenamento.</p>
+</li>
+<li>
+<p><strong>Databricks</strong></p>
+<p>Utilização da plataforma Databricks para processamento distribuído e orquestração da pipeline.</p>
+</li>
+<li>
+<p><strong>Delta Lake</strong></p>
+<p>Implementação de armazenamento transacional com suporte a ACID, versionamento e Time Travel.</p>
+</li>
+<li>
+<p><strong>Processamento Distribuído</strong></p>
+<p>Transformações de dados utilizando Apache Spark e PySpark em ambiente escalável.</p>
+</li>
+<li>
+<p><strong>Governança de Dados</strong></p>
+<p>Garantia de rastreabilidade, consistência e controle das informações processadas.</p>
+</li>
+<li>
+<p><strong>Modelagem Dimensional</strong></p>
+<p>Estruturação analítica utilizando tabelas Fato e Dimensão para BI e Analytics.</p>
+</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Gustavo Cardoso & João Miguel Rita
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/GustavodeFreitasCardoso" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.tabs.link", "toc.integrate"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
